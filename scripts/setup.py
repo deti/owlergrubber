@@ -5,6 +5,7 @@ install_requires = [
     "requests",
     "metayaml",
     "attrdict",
+    "sqlitedict",
 ]
 
 owlergrubber_dependencies = [

@@ -9,6 +9,7 @@ https://dev.evernote.com/doc/
 """
 import conf
 import logging
+from sqlitedict import SqliteDict
 
 
 def config_logging():
@@ -37,6 +38,7 @@ def debug_decorator(func):
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
+    note_info = SqliteDict(conf.db.db_file, autocommit=True)
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":
