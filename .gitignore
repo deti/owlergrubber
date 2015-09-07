@@ -1,0 +1,13 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea
+*.py[co]
+*.log
+/bin
+/log
+develop-eggs/
+downloads/
+*.egg-info/
+dist/
+!.gitignore
+.installed.cfg
+*.mo

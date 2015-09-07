@@ -1,0 +1,17 @@
+#extend:
+app_name: "og"
+
+logging:
+  log_dir: ${join(ROOT, "log")}
+  log_filename: ${app_name+".log"}
+  log_file: ${join(logging.log_dir, logging.log_filename)}
+  format: "%(asctime)s %(levelname)s: %(message)s"
+  level: 30
+          #CRITICAL = 50
+          #FATAL = CRITICAL
+          #ERROR = 40
+          #WARNING = 30
+          #WARN = WARNING
+          #INFO = 20
+          #DEBUG = 10
+          #NOTSET = 0
