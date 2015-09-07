@@ -6,6 +6,7 @@ install_requires = [
     "metayaml",
     "attrdict",
     "sqlitedict",
+    "selenium",
 ]
 
 owlergrubber_dependencies = [

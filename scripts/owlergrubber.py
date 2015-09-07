@@ -9,8 +9,10 @@ https://dev.evernote.com/doc/
 """
 import conf
 import logging
+from functools import wraps
 from sqlitedict import SqliteDict
-
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 def config_logging():
     import os
@@ -34,11 +36,21 @@ def debug_decorator(func):
     return func_wrapper
 
 
+def try_seleinum():
+    browser = webdriver.Firefox()
+
+    browser.get('http://www.yahoo.com')
+    assert 'Yahoo' in browser.title
+
+    elem = browser.find_element_by_name('p')  # Find the search box
+    elem.send_keys('seleniumhq' + Keys.RETURN)
+
+    browser.quit()
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    note_info = SqliteDict(conf.db.db_file, autocommit=True)
+    try_seleinum()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":
