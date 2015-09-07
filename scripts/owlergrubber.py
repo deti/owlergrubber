@@ -9,6 +9,7 @@ https://dev.evernote.com/doc/
 """
 import conf
 import logging
+import time
 from functools import wraps
 from sqlitedict import SqliteDict
 from selenium import webdriver
@@ -38,19 +39,43 @@ def debug_decorator(func):
 
 def try_seleinum():
     browser = webdriver.Firefox()
-
     browser.get('http://www.yahoo.com')
     assert 'Yahoo' in browser.title
-
     elem = browser.find_element_by_name('p')  # Find the search box
     elem.send_keys('seleniumhq' + Keys.RETURN)
-
     browser.quit()
+
+def _get_browser():
+    return webdriver.Firefox()
+
+def login_to_owler():
+    browser = _get_browser()
+    browser.get(conf.owler.url)
+    assert "Owler: Competitive Intelligence for Better Business Decisions" in browser.title
+    browser.find_element_by_id("signInLink").click()
+
+    email_sign_in = browser.find_element_by_id("emailSignIn")
+    email_sign_in.clear()
+    email_sign_in.send_keys("detijazzz@yandex.ru")
+
+    password_sign_in = browser.find_element_by_id("passwordSignIn")
+    password_sign_in.clear()
+    password_sign_in.send_keys("Ktpp2002%^")
+
+    sign_in_submit = browser.find_element_by_id("signInSubmit")
+    sign_in_submit.click()
+
+    time.sleep(15)
+    browser.quit()
+
+    # browser.find_element_by_link_text("Advanced Search").click()
+    # browser.find_element_by_id("showResults").click()
+
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    try_seleinum()
+    login_to_owler()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":

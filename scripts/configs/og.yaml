@@ -22,5 +22,6 @@ db:
   db_file: ${join(db.db_dir, db.db_filename)}
 
 owler:
+  url: "https://www.owler.com/"
   login: __FIX_ME__
   password: __FIX_ME__
