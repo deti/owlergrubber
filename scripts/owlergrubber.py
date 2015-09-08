@@ -14,6 +14,7 @@ from functools import wraps
 from sqlitedict import SqliteDict
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 def config_logging():
     import os
@@ -48,8 +49,12 @@ def try_seleinum():
 def _get_browser():
     return webdriver.Firefox()
 
-def login_to_owler():
-    browser = _get_browser()
+def login_to_owler(browser):
+    """
+    Log in to Owler
+    :param browser: object
+    :return: Browser object with alive session into Owler
+    """
     browser.get(conf.owler.url)
     assert "Owler: Competitive Intelligence for Better Business Decisions" in browser.title
     browser.find_element_by_id("signInLink").click()
@@ -57,25 +62,60 @@ def login_to_owler():
     email_sign_in = browser.find_element_by_id("emailSignIn")
     email_sign_in.clear()
     email_sign_in.send_keys("detijazzz@yandex.ru")
+    time.sleep(2)
 
     password_sign_in = browser.find_element_by_id("passwordSignIn")
     password_sign_in.clear()
     password_sign_in.send_keys("Ktpp2002%^")
+    time.sleep(2)
 
     sign_in_submit = browser.find_element_by_id("signInSubmit")
     sign_in_submit.click()
 
-    time.sleep(15)
-    browser.quit()
 
-    # browser.find_element_by_link_text("Advanced Search").click()
-    # browser.find_element_by_id("showResults").click()
+def make_advanced_search_request(browser):
+    """
+    Make advanced search request
+    :param browser: valid browser object
+    :return: browser object with applied search
+    """
+    advanced_search = browser.find_element_by_class_name("advncd-search")
+    advanced_search.click()
 
+    company_age_slider = browser.find_element_by_xpath("//*[contains(text(), '10 YRS+')]")
+    actions = ActionChains(browser)
+    actions.move_to_element(company_age_slider)
+    actions.click(company_age_slider)
+    actions.key_down(Keys.ARROW_LEFT)
+    actions.key_up(Keys.ARROW_LEFT)
+    actions.key_down(Keys.ARROW_LEFT)
+    actions.perform()
+
+    browser.find_element_by_id("showResults").click()
+
+# driver.get(self.base_url + "/iaApp/advancedsearch.htm")
+# Select(driver.find_element_by_name("searchCompanyTable_length")).select_by_visible_text("100")
+# driver.find_element_by_id("searchCompanyTable_next").click()
+# driver.find_element_by_id("searchCompanyTable_next").click()
+# driver.find_element_by_id("searchCompanyTable_next").click()
+# driver.find_element_by_id("searchCompanyTable_next").click()
+# driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").clear()
+# driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").send_keys("10")
+# driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").clear()
+# driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").send_keys("12")
+
+
+def login_and_search():
+    browser = _get_browser()
+    login_to_owler(browser)
+    time.sleep(5)
+    make_advanced_search_request(browser)
+    # browser.quit()
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    login_to_owler()
+    login_and_search()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":
