@@ -15,6 +15,8 @@ from sqlitedict import SqliteDict
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.wait import WebDriverWait
 
 def config_logging():
     import os
@@ -62,15 +64,14 @@ def login_to_owler(browser):
     email_sign_in = browser.find_element_by_id("emailSignIn")
     email_sign_in.clear()
     email_sign_in.send_keys("detijazzz@yandex.ru")
-    time.sleep(2)
 
     password_sign_in = browser.find_element_by_id("passwordSignIn")
     password_sign_in.clear()
     password_sign_in.send_keys("Ktpp2002%^")
-    time.sleep(2)
 
     sign_in_submit = browser.find_element_by_id("signInSubmit")
     sign_in_submit.click()
+    time.sleep(1)
 
 
 def make_advanced_search_request(browser):
@@ -88,22 +89,27 @@ def make_advanced_search_request(browser):
     actions.click(company_age_slider)
     actions.key_down(Keys.ARROW_LEFT)
     actions.key_up(Keys.ARROW_LEFT)
-    actions.key_down(Keys.ARROW_LEFT)
+    # actions.key_down(Keys.ARROW_LEFT)
     actions.perform()
 
     browser.find_element_by_id("showResults").click()
+    time.sleep(5)
 
-    # browser.find_element_by_name("searchCompanyTable_length").select_by_visible_text("100")
-    # time.sleep(2)
+    # select = Select(browser.find_element_by_tag_name("select"))
+    select = Select(browser.find_element_by_name("searchCompanyTable_length"))
+    select.select_by_value("100")
+    time.sleep(2)
 
 
-
+PROFILE = "profile"
+NAME = "name"
+URL = "url"
 
 def collect_search_results(browser):
     """
     Collect search results
     :param browser: valid browser object with open search results page
-    :return:
+    :return: dict with name-profile pairs
     """
     search_company_table = browser.find_element_by_id("searchCompanyTable")
     time.sleep(1) #Some how doesn't work without delay here
@@ -111,17 +117,20 @@ def collect_search_results(browser):
     rows = company_body.find_elements_by_tag_name("tr")
     logging.info("Found {} rows in search page".format(len(rows)))
 
+    profiles = dict()
     for r in rows:
         name = r.find_element_by_class_name("ellipsis").text
         profile = r.find_element_by_class_name("company_profile").get_attribute("href")
-        logging.info("Got: {} {}".format(name, profile))
+        url = r.find_elements_by_tag_name("a")[1].get_attribute("href")
+        logging.info("Got: {}\t{}\t{}".format(name, url, profile))
+        profiles[profile] = {
+            PROFILE : profile,
+            NAME : name,
+            URL : url
+        }
+    return profiles
 
 
-
-    # for r in rows:
-    #     print("\n")
-    #     print(r)
-    # driver.get(self.base_url + "/iaApp/advancedsearch.htm")
     # Select(driver.find_element_by_name("searchCompanyTable_length")).select_by_visible_text("100")
     # driver.find_element_by_id("searchCompanyTable_next").click()
     # driver.find_element_by_id("searchCompanyTable_next").click()
@@ -132,17 +141,36 @@ def collect_search_results(browser):
     # driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").clear()
     # driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").send_keys("12")
 
+def walk_through(browser):
+    """
+    Walk through passed pages
+    :param browser:
+    :return:
+    """
+    pages_txt = browser.find_element_by_class_name("paginate_of").text
+    #filter numbers
+    pages = int( ''.join(c for c in pages_txt if c.isdigit() ) )
+    print(pages)
+
+    def is_processed(some):
+        processing = browser.find_element_by_id("searchCompanyTable_processing")
+        return not processing.is_displayed()
+
+    for p in range(3):
+        logging.info("------- Process page #{} -------".format(p))
+        collect_search_results(browser)
+        browser.find_element_by_id("searchCompanyTable_next").click()
+        WebDriverWait(browser,30).until( is_processed )
 
 
 def login_and_search():
     browser = _get_browser()
     login_to_owler(browser)
-    time.sleep(5)
+    time.sleep(2)
     make_advanced_search_request(browser)
 
-    collect_search_results(browser)
-
-    # browser.quit()
+    walk_through(browser)
+    browser.quit()
 
 def main():
     config_logging()
