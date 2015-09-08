@@ -109,9 +109,15 @@ def collect_search_results(browser):
     time.sleep(1) #Some how doesn't work without delay here
     company_body = search_company_table.find_element_by_tag_name("tbody")
     rows = company_body.find_elements_by_tag_name("tr")
-    print(len(rows))
+    logging.info("Found {} rows in search page".format(len(rows)))
 
-    r = rows[1]
+    for r in rows:
+        name = r.find_element_by_class_name("ellipsis").text
+        profile = r.find_element_by_class_name("company_profile").get_attribute("href")
+        logging.info("Got: {} {}".format(name, profile))
+
+
+
     # for r in rows:
     #     print("\n")
     #     print(r)

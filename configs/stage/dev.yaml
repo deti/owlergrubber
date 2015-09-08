@@ -1,5 +1,5 @@
 logging:
-  level: 10
+  level: 20
 
 owler:
   login: "detijazzz@yandex.ru"
