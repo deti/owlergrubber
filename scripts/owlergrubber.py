@@ -102,6 +102,7 @@ def make_advanced_search_request(browser):
 PROFILE = "profile"
 NAME = "name"
 URL = "url"
+PROCESSED = "processed"
 
 def collect_search_results(browser):
     """
@@ -124,7 +125,8 @@ def collect_search_results(browser):
         profiles[profile] = {
             PROFILE : profile,
             NAME : name,
-            URL : url
+            URL : url,
+            PROCESSED: False
         }
     return profiles
 
@@ -136,21 +138,26 @@ def walk_through(browser):
     :param browser:
     :return:
     """
+    profiles = SqliteDict(conf.db.db_file, autocommit=True)
+
     pages_txt = browser.find_element_by_class_name("paginate_of").text
     #filter numbers
     pages = int( ''.join(c for c in pages_txt if c.isdigit() ) )
-    print(pages)
+    logging.info("Found {} pages".format(pages))
 
     def is_processed(some):
         """ Check if request for new results finished """
         processing = browser.find_element_by_id("searchCompanyTable_processing")
         return not processing.is_displayed()
 
-    for p in range(3):
+    # for p in range(20):
+    for p in range(pages):
         logging.info("------- Process page #{} -------".format(p))
-        collect_search_results(browser)
+        profiles.update( collect_search_results(browser) )
         browser.find_element_by_id("searchCompanyTable_next").click()
         WebDriverWait(browser,30).until( is_processed )
+
+    profiles.close()
 
 
 def login_and_search():
