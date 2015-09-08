@@ -89,13 +89,11 @@ def make_advanced_search_request(browser):
     actions.click(company_age_slider)
     actions.key_down(Keys.ARROW_LEFT)
     actions.key_up(Keys.ARROW_LEFT)
-    # actions.key_down(Keys.ARROW_LEFT)
     actions.perform()
 
     browser.find_element_by_id("showResults").click()
     time.sleep(5)
 
-    # select = Select(browser.find_element_by_tag_name("select"))
     select = Select(browser.find_element_by_name("searchCompanyTable_length"))
     select.select_by_value("100")
     time.sleep(2)
@@ -131,15 +129,6 @@ def collect_search_results(browser):
     return profiles
 
 
-    # Select(driver.find_element_by_name("searchCompanyTable_length")).select_by_visible_text("100")
-    # driver.find_element_by_id("searchCompanyTable_next").click()
-    # driver.find_element_by_id("searchCompanyTable_next").click()
-    # driver.find_element_by_id("searchCompanyTable_next").click()
-    # driver.find_element_by_id("searchCompanyTable_next").click()
-    # driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").clear()
-    # driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").send_keys("10")
-    # driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").clear()
-    # driver.find_element_by_css_selector("#searchCompanyTable_paginate > input.validate").send_keys("12")
 
 def walk_through(browser):
     """
@@ -153,6 +142,7 @@ def walk_through(browser):
     print(pages)
 
     def is_processed(some):
+        """ Check if request for new results finished """
         processing = browser.find_element_by_id("searchCompanyTable_processing")
         return not processing.is_displayed()
 
