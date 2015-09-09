@@ -22,6 +22,7 @@ from selenium.webdriver.support.expected_conditions import text_to_be_present_in
 
 from owler.general import login_to_owler
 from owler.search import iterate_through_search
+from owler.profile import retrive_profiles
 from constants import *
 
 def config_logging():
@@ -48,12 +49,6 @@ def debug_decorator(func):
 
 def _get_browser():
     return webdriver.Firefox()
-
-
-
-
-
-
 
 
 def collect_profiles_links():
@@ -96,12 +91,16 @@ def collect_profiles_links():
     #                        year_step=1)
     # browser.quit()
 
+def get_profiles():
+    browser = _get_browser()
+    retrive_profiles(browser)
+    browser.quit()
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    # login_and_search()
     collect_profiles_links()
+    get_profiles()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":

@@ -7,6 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import text_to_be_present_in_element
 
+from scripts.constants import *
 
 def collect_profile_from_search(browser):
     """
