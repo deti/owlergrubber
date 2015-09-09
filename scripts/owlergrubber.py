@@ -200,10 +200,15 @@ def make_advanced_request(browser, funds_from, funds_to, year_from, year_to):
     browser.find_element_by_id("showResults").click()
     wait_for_advanced_search(browser, "Advanced Search Results")
 
+def collect(browser):
+    pass
 
-
-
-def play_with_funding_sliders(browser):
+def iterate_through_search(browser,
+                           check_funds=100,
+                           fund_gap = 10,
+                           fund_step = 5,
+                           check_years=8,
+                           year_gap = 2):
     """
     Make advanced search request
     :param browser: valid browser object
@@ -211,21 +216,21 @@ def play_with_funding_sliders(browser):
     """
     advanced_search = browser.find_element_by_class_name("advncd-search")
     advanced_search.click()
-    for funds in range (2):
-        for year in range(2):
-            f = funds*5*ONE_M
+
+    for funds in range (check_funds-fund_gap):
+        for year in range(check_years - year_gap):
+            f = funds*fund_step*ONE_M
+
             make_advanced_request(
-                browser, f , 10*ONE_M + f, year, 2+year
+                browser, f , fund_gap*ONE_M + f, year, year_gap+year
             )
             dataTables_info = browser.find_element_by_class_name("dataTables_info")
             print("-----------------")
-            print("Funds from {}M to {}M".format(funds*5, 10+funds*5))
-            print("Years from {} to {}".format(year, 2+year))
+            print("Funds from {}M to {}M".format(funds*fund_step, fund_gap+funds*fund_step))
+            print("Years from {} to {}".format(year, year_gap+year))
             print(dataTables_info.text)
 
             browser.find_element_by_link_text("< BACK TO MY SEARCH CRITERIA").click()
-            # browser.find_element_by_link_text("BACK TO MY SEARCH CRITERIA").click()
-            # browser.find_element_by_class_name("back").click()
             wait_for_advanced_search(browser, "Advanced Search")
 
 
@@ -234,7 +239,8 @@ def play_with_queries():
     browser = _get_browser()
     login_to_owler(browser)
     time.sleep(2)
-    play_with_funding_sliders(browser)
+    iterate_through_search(browser)
+    browser.quit()
 
 def main():
     config_logging()
