@@ -17,6 +17,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.expected_conditions import text_to_be_present_in_element
+
+from constants import *
 
 def config_logging():
     import os
@@ -99,11 +103,6 @@ def make_advanced_search_request(browser):
     time.sleep(2)
 
 
-PROFILE = "profile"
-NAME = "name"
-URL = "url"
-PROCESSED = "processed"
-
 def collect_search_results(browser):
     """
     Collect search results
@@ -169,10 +168,79 @@ def login_and_search():
     walk_through(browser)
     browser.quit()
 
+
+def wait_for_advanced_search(browser, text):
+    WebDriverWait(browser,30).until(
+        text_to_be_present_in_element(
+            (By.ID,"advancesearch_container"),
+            text
+        )
+    )
+
+
+
+def make_advanced_request(browser, funds_from, funds_to, year_from, year_to):
+    funding_min = browser.find_element_by_id("funding_min")
+    funding_max = browser.find_element_by_id("funding_max")
+    companyAge_min = browser.find_element_by_id("companyAge_min")
+    companyAge_max = browser.find_element_by_id("companyAge_max")
+
+    def set_value(element, value): # Set value to hidden element
+        browser.execute_script(
+            "arguments[0].setAttribute('value', arguments[1])",
+            element,
+            value
+        )
+
+    set_value(funding_min, funds_from)
+    set_value(funding_max, funds_to)
+    set_value(companyAge_min, year_from)
+    set_value(companyAge_max, year_to)
+
+    browser.find_element_by_id("showResults").click()
+    wait_for_advanced_search(browser, "Advanced Search Results")
+
+
+
+
+def play_with_funding_sliders(browser):
+    """
+    Make advanced search request
+    :param browser: valid browser object
+    :return: browser object with applied search
+    """
+    advanced_search = browser.find_element_by_class_name("advncd-search")
+    advanced_search.click()
+    for funds in range (2):
+        for year in range(2):
+            f = funds*5*ONE_M
+            make_advanced_request(
+                browser, f , 10*ONE_M + f, year, 2+year
+            )
+            dataTables_info = browser.find_element_by_class_name("dataTables_info")
+            print("-----------------")
+            print("Funds from {}M to {}M".format(funds*5, 10+funds*5))
+            print("Years from {} to {}".format(year, 2+year))
+            print(dataTables_info.text)
+
+            browser.find_element_by_link_text("< BACK TO MY SEARCH CRITERIA").click()
+            # browser.find_element_by_link_text("BACK TO MY SEARCH CRITERIA").click()
+            # browser.find_element_by_class_name("back").click()
+            wait_for_advanced_search(browser, "Advanced Search")
+
+
+
+def play_with_queries():
+    browser = _get_browser()
+    login_to_owler(browser)
+    time.sleep(2)
+    play_with_funding_sliders(browser)
+
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    login_and_search()
+    # login_and_search()
+    play_with_queries()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":
