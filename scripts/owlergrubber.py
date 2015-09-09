@@ -44,16 +44,9 @@ def debug_decorator(func):
     return func_wrapper
 
 
-def try_seleinum():
-    browser = webdriver.Firefox()
-    browser.get('http://www.yahoo.com')
-    assert 'Yahoo' in browser.title
-    elem = browser.find_element_by_name('p')  # Find the search box
-    elem.send_keys('seleniumhq' + Keys.RETURN)
-    browser.quit()
-
 def _get_browser():
     return webdriver.Firefox()
+
 
 def login_to_owler(browser):
     """
@@ -78,32 +71,8 @@ def login_to_owler(browser):
     time.sleep(1)
 
 
-def make_advanced_search_request(browser):
-    """
-    Make advanced search request
-    :param browser: valid browser object
-    :return: browser object with applied search
-    """
-    advanced_search = browser.find_element_by_class_name("advncd-search")
-    advanced_search.click()
 
-    company_age_slider = browser.find_element_by_xpath("//*[contains(text(), '10 YRS+')]")
-    actions = ActionChains(browser)
-    actions.move_to_element(company_age_slider)
-    actions.click(company_age_slider)
-    actions.key_down(Keys.ARROW_LEFT)
-    actions.key_up(Keys.ARROW_LEFT)
-    actions.perform()
-
-    browser.find_element_by_id("showResults").click()
-    time.sleep(5)
-
-    select = Select(browser.find_element_by_name("searchCompanyTable_length"))
-    select.select_by_value("100")
-    time.sleep(2)
-
-
-def collect_search_results(browser):
+def collect_profile_from_search(browser):
     """
     Collect search results
     :param browser: valid browser object with open search results page
@@ -130,10 +99,23 @@ def collect_search_results(browser):
     return profiles
 
 
+def wait_for_processed(browser):
+    def is_processed(some): # Check if request for new results finished
+        processing = browser.find_element_by_id("searchCompanyTable_processing")
+        return not processing.is_displayed()
+    WebDriverWait(browser,30).until( is_processed )
 
-def walk_through(browser):
+def wait_for_advanced_search(browser, text):
+    WebDriverWait(browser,30).until(
+        text_to_be_present_in_element(
+            (By.ID,"advancesearch_container"),
+            text
+        )
+    )
+
+def walk_through_search(browser):
     """
-    Walk through passed pages
+    Walk through search pages
     :param browser:
     :return:
     """
@@ -144,42 +126,17 @@ def walk_through(browser):
     pages = int( ''.join(c for c in pages_txt if c.isdigit() ) )
     logging.info("Found {} pages".format(pages))
 
-    def is_processed(some):
-        """ Check if request for new results finished """
-        processing = browser.find_element_by_id("searchCompanyTable_processing")
-        return not processing.is_displayed()
-
     # for p in range(20):
     for p in range(pages):
         logging.info("------- Process page #{} -------".format(p))
-        profiles.update( collect_search_results(browser) )
+        profiles.update( collect_profile_from_search(browser) )
         browser.find_element_by_id("searchCompanyTable_next").click()
-        WebDriverWait(browser,30).until( is_processed )
+        wait_for_processed(browser)
 
     profiles.close()
 
 
-def login_and_search():
-    browser = _get_browser()
-    login_to_owler(browser)
-    time.sleep(2)
-    make_advanced_search_request(browser)
-
-    walk_through(browser)
-    browser.quit()
-
-
-def wait_for_advanced_search(browser, text):
-    WebDriverWait(browser,30).until(
-        text_to_be_present_in_element(
-            (By.ID,"advancesearch_container"),
-            text
-        )
-    )
-
-
-
-def make_advanced_request(browser, funds_from, funds_to, year_from, year_to):
+def make_advanced_search(browser, funds_from, funds_to, year_from, year_to):
     funding_min = browser.find_element_by_id("funding_min")
     funding_max = browser.find_element_by_id("funding_max")
     companyAge_min = browser.find_element_by_id("companyAge_min")
@@ -192,6 +149,9 @@ def make_advanced_request(browser, funds_from, funds_to, year_from, year_to):
             value
         )
 
+    if year_to >= 10: year_to = "*"
+    if funds_to >= 100*ONE_M: funds_to = "*"
+
     set_value(funding_min, funds_from)
     set_value(funding_max, funds_to)
     set_value(companyAge_min, year_from)
@@ -200,15 +160,22 @@ def make_advanced_request(browser, funds_from, funds_to, year_from, year_to):
     browser.find_element_by_id("showResults").click()
     wait_for_advanced_search(browser, "Advanced Search Results")
 
-def collect(browser):
-    pass
+    select = Select(browser.find_element_by_name("searchCompanyTable_length"))
+    select.select_by_value("100")
+    wait_for_processed(browser)
+
+
+
 
 def iterate_through_search(browser,
-                           check_funds=100,
-                           fund_gap = 10,
-                           fund_step = 5,
-                           check_years=8,
-                           year_gap = 2):
+                           funds_from,
+                           funds_to,
+                           funds_gap,
+                           funds_step,
+                           year_from,
+                           year_to,
+                           year_gap,
+                           year_step):
     """
     Make advanced search request
     :param browser: valid browser object
@@ -216,37 +183,63 @@ def iterate_through_search(browser,
     """
     advanced_search = browser.find_element_by_class_name("advncd-search")
     advanced_search.click()
+    funds_l = funds_from
+    funds_r = funds_from + funds_gap
+    year_l = year_from
+    year_r = year_from+year_gap
 
-    for funds in range (check_funds-fund_gap):
-        for year in range(check_years - year_gap):
-            f = funds*fund_step*ONE_M
-
-            make_advanced_request(
-                browser, f , fund_gap*ONE_M + f, year, year_gap+year
-            )
+    while funds_r <= funds_to:
+        while year_r <= year_to:
+            make_advanced_search(browser, funds_l, funds_r, year_l, year_r)
             dataTables_info = browser.find_element_by_class_name("dataTables_info")
-            print("-----------------")
-            print("Funds from {}M to {}M".format(funds*fund_step, fund_gap+funds*fund_step))
-            print("Years from {} to {}".format(year, year_gap+year))
-            print(dataTables_info.text)
+            logging.info("Years from {} to {}, Funds from {}M to {}M, {}".format(
+                year_l, year_r, funds_l, funds_r, dataTables_info.text
+            ))
+
+            walk_through_search(browser)
 
             browser.find_element_by_link_text("< BACK TO MY SEARCH CRITERIA").click()
             wait_for_advanced_search(browser, "Advanced Search")
 
+            year_l += year_step
+            year_r += year_step
+        funds_l += funds_step
+        funds_r += funds_step
 
 
-def play_with_queries():
+
+def collect_profiles_links():
     browser = _get_browser()
     login_to_owler(browser)
-    time.sleep(2)
-    iterate_through_search(browser)
+    iterate_through_search(browser,
+                           funds_from=0,
+                           funds_to=10*ONE_M,
+                           funds_gap=2*ONE_M,
+                           funds_step=ONE_M,
+                           year_from=0,
+                           year_to=8,
+                           year_gap=2,
+                           year_step=1)
     browser.quit()
+    browser = _get_browser()
+    login_to_owler(browser)
+    iterate_through_search(browser,
+                           funds_from=10*ONE_M,
+                           funds_to=100*ONE_M,
+                           funds_gap=10*ONE_M,
+                           funds_step=10*ONE_M,
+                           year_from=0,
+                           year_to=8,
+                           year_gap=2,
+                           year_step=1)
+    browser.quit()
+
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
     # login_and_search()
-    play_with_queries()
+    collect_profiles_links()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":
