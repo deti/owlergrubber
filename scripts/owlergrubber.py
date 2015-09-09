@@ -185,18 +185,23 @@ def iterate_through_search(browser,
     advanced_search.click()
     funds_l = funds_from
     funds_r = funds_from + funds_gap
-    year_l = year_from
-    year_r = year_from+year_gap
 
     while funds_r <= funds_to:
+        year_l = year_from
+        year_r = year_from+year_gap
         while year_r <= year_to:
+
             make_advanced_search(browser, funds_l, funds_r, year_l, year_r)
             dataTables_info = browser.find_element_by_class_name("dataTables_info")
-            logging.info("Years from {} to {}, Funds from {}M to {}M, {}".format(
+            logging.info("Years from {} to {}, Funds from {} to {}, {}".format(
                 year_l, year_r, funds_l, funds_r, dataTables_info.text
             ))
 
-            walk_through_search(browser)
+            print("Years from {} to {}, Funds from {} to {}, {}".format(
+                year_l, year_r, funds_l, funds_r, dataTables_info.text
+            ))
+
+            # walk_through_search(browser)
 
             browser.find_element_by_link_text("< BACK TO MY SEARCH CRITERIA").click()
             wait_for_advanced_search(browser, "Advanced Search")
@@ -212,27 +217,41 @@ def collect_profiles_links():
     browser = _get_browser()
     login_to_owler(browser)
     iterate_through_search(browser,
-                           funds_from=0,
-                           funds_to=10*ONE_M,
+                           funds_from=2*ONE_M,
+                           funds_to=6*ONE_M,
                            funds_gap=2*ONE_M,
-                           funds_step=ONE_M,
+                           funds_step=2*ONE_M,
                            year_from=0,
                            year_to=8,
                            year_gap=2,
-                           year_step=1)
+                           year_step=2)
     browser.quit()
-    browser = _get_browser()
-    login_to_owler(browser)
-    iterate_through_search(browser,
-                           funds_from=10*ONE_M,
-                           funds_to=100*ONE_M,
-                           funds_gap=10*ONE_M,
-                           funds_step=10*ONE_M,
-                           year_from=0,
-                           year_to=8,
-                           year_gap=2,
-                           year_step=1)
-    browser.quit()
+
+
+    # browser = _get_browser()
+    # login_to_owler(browser)
+    # iterate_through_search(browser,
+    #                        funds_from=0,
+    #                        funds_to=10*ONE_M,
+    #                        funds_gap=2*ONE_M,
+    #                        funds_step=ONE_M,
+    #                        year_from=0,
+    #                        year_to=8,
+    #                        year_gap=2,
+    #                        year_step=1)
+    # browser.quit()
+    # browser = _get_browser()
+    # login_to_owler(browser)
+    # iterate_through_search(browser,
+    #                        funds_from=10*ONE_M,
+    #                        funds_to=100*ONE_M,
+    #                        funds_gap=10*ONE_M,
+    #                        funds_step=10*ONE_M,
+    #                        year_from=0,
+    #                        year_to=8,
+    #                        year_gap=2,
+    #                        year_step=1)
+    # browser.quit()
 
 
 def main():
