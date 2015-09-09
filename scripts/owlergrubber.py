@@ -19,10 +19,11 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import text_to_be_present_in_element
+from selenium.common.exceptions import  NoSuchElementException
 
 from owler.general import login_to_owler
 from owler.search import iterate_through_search
-from owler.profile import retrive_profiles
+from owler.profile import get_profile
 from constants import *
 
 def config_logging():
@@ -91,16 +92,33 @@ def collect_profiles_links():
     #                        year_step=1)
     # browser.quit()
 
-def get_profiles():
+
+
+
+
+
+def collect_profiles_data():
     browser = _get_browser()
-    retrive_profiles(browser)
+    login_to_owler(browser)
+    test_profiles = [
+        "https://www.owler.com/iaApp/1855459/lodging-opportunity-fund-company-profile",
+        "https://www.owler.com/iaApp/4733500/springpath-company-profile",
+        "https://www.owler.com/iaApp/716945/minesto-company-profile",
+        "https://www.owler.com/iaApp/223273/acfun-company-profile",
+        "https://www.owler.com/iaApp/1574811/graymatter-company-profile",
+        "https://www.owler.com/iaApp/219185/modumetal-company-profile",
+        "https://www.owler.com/iaApp/100471/yieldex-company-profile",
+        "https://www.owler.com/iaApp/100048/99designs-company-profile"
+    ]
+    for u in test_profiles:
+        get_profile(browser, u)
     browser.quit()
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    collect_profiles_links()
-    get_profiles()
+    # collect_profiles_links()
+    collect_profiles_data()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 if __name__=="__main__":

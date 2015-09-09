@@ -28,10 +28,10 @@ def collect_profile_from_search(browser):
         url = r.find_elements_by_tag_name("a")[1].get_attribute("href")
         logging.info("Got: {}\t{}\t{}".format(name, url, profile))
         profiles[profile] = {
-            PROFILE : profile,
-            NAME : name,
-            URL : url,
-            PROCESSED: False
+            TAG_PROFILE : profile,
+            TAG_NAME : name,
+            TAG_URL : url,
+            TAG_PROCESSED: False
         }
     return profiles
 
