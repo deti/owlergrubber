@@ -13,6 +13,7 @@ TAG_PREVIOUS_AMT = "previous_amt"
 TAG_PREVIOUS_DATE = "previous_date"
 TAG_PREVIOUS_SOURCE = "previous_source"
 TAG_PREVIOUS_INVESTORS = "previous_investors"
+TAG_COMPANY_NAME = "company_name"
 
 
 ONE_M = 1000000

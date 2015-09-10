@@ -3,8 +3,7 @@ __author__ = 'deti'
 import logging
 
 from selenium.common.exceptions import NoSuchElementException
-from scripts.constants import *
-
+from constants import *
 
 test_profiles = [
     "https://www.owler.com/iaApp/1855459/lodging-opportunity-fund-company-profile",
@@ -16,23 +15,40 @@ test_profiles = [
 ]
 
 
+def get_text_by_id(element, _id):
+    try:
+        txt = element.find_element_by_id(_id).text
+    except NoSuchElementException:
+        txt = None
+    return txt
+
+
+def get_text_by_class_name(element, class_name):
+    try:
+        txt = element.find_element_by_class_name(class_name).text
+    except NoSuchElementException:
+        txt = None
+    return txt
+
+
+def get_href_by_class_name(element, class_name):
+    try:
+        href = element.find_element_by_class_name(class_name).get_attribute("href")
+    except NoSuchElementException:
+        href = None
+    return href
+
+
+
 def get_profile(browser, url):
     browser.get(url)
 
-    try:
-        description = browser.find_element_by_id("description").text
-    except NoSuchElementException:
-        description = None
-
-    try:
-        founded_year = browser.find_element_by_id("foundedYear").text
-    except NoSuchElementException:
-        founded_year = None
-
-    try:
-        funding_total = browser.find_element_by_id("fundingTotal").text.replace("TOTAL", "")
-    except NoSuchElementException:
-        funding_total = None
+    company_name = get_text_by_id(browser, "companyName")
+    description = get_text_by_id(browser, "description")
+    founded_year = get_text_by_id(browser, "foundedYear")
+    funding_total = get_text_by_id(browser, "fundingTotal")
+    if funding_total:
+        funding_total = funding_total.replace("TOTAL", "")
 
     try:
         funding_table = browser.find_element_by_id("fundingTable")
@@ -45,20 +61,20 @@ def get_profile(browser, url):
     last_source = None
     last_investors = None
     if details:
-        last_amt = details[0].find_element_by_class_name("amt").text
-        last_date = details[0].find_element_by_class_name("date").text
-        last_source = details[0].find_element_by_class_name("invsource").get_attribute("href")
-        last_investors = details[0].find_element_by_class_name("investors").text
+        last_amt = get_text_by_class_name(details[0], "amt")
+        last_date = get_text_by_class_name(details[0],"date")
+        last_source = get_href_by_class_name(details[0], "invsource")
+        last_investors = get_text_by_class_name(details[0],"investors")
 
     previous_amt = None
     previous_date = None
     previous_source = None
     previous_investors = None
     if len(details) > 1:
-        previous_amt = details[1].find_element_by_class_name("amt").text
-        previous_date = details[1].find_element_by_class_name("date").text
-        previous_source = details[1].find_element_by_class_name("invsource").get_attribute("href")
-        previous_investors = details[1].find_element_by_class_name("investors").text
+        previous_amt = get_text_by_class_name(details[1],"amt")
+        previous_date = get_text_by_class_name(details[1],"date")
+        previous_source = get_href_by_class_name(details[1], "invsource")
+        previous_investors = get_text_by_class_name(details[1],"investors")
 
     # print("---------------------------------------------------------------------")
     # print("url: {}".format(url))
@@ -75,6 +91,7 @@ def get_profile(browser, url):
     # print("previous_investors: {}".format(previous_investors))
 
     profile = {
+        TAG_COMPANY_NAME : company_name,
         TAG_DESCRIPTION: description,
         TAG_FOUNDED_YEAR: founded_year,
         TAG_FUNDING_TOTAL: funding_total,

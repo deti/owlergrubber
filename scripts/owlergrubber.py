@@ -13,10 +13,12 @@ from functools import wraps
 from sqlitedict import SqliteDict
 from selenium import webdriver
 
+from constants import *
+
 from owler.general import login_to_owler
 from owler.search import iterate_through_search
 from owler.profile import get_profile
-from constants import *
+
 
 
 def config_logging():
@@ -93,10 +95,17 @@ def collect_profiles_data():
     browser = _get_browser()
     login_to_owler(browser)
 
+    i = 1
     for url in profiles.keys():
+        d = profiles[url]
         if not profiles[url][TAG_PROCESSED]:
-            profiles[url].update(get_profile(browser, url))
-            profiles[url][TAG_PROCESSED] = True
+            r = get_profile(browser, url)
+            d.update(r)
+            d[TAG_PROCESSED] = True
+            profiles[url] = d
+            logging.info("Processed {}: {}".format(i, profiles[url] ))
+        i +=1
+
     browser.quit()
     profiles.close()
 
@@ -105,7 +114,8 @@ def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
     # collect_profiles_links()
-    collect_profiles_data()
+    # collect_profiles_data()
+    print("some")
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 
