@@ -17,3 +17,5 @@ TAG_COMPANY_NAME = "company_name"
 
 
 ONE_M = 1000000
+
+NO_VALUE = "NO_VALUE"

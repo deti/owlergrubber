@@ -109,13 +109,59 @@ def collect_profiles_data():
     browser.quit()
     profiles.close()
 
+def export_to_csv():
+    profiles = SqliteDict(conf.db.db_file, autocommit=False)
+
+    def get_values(values, tags):
+        res = list()
+        for tag in tags:
+            s = values.get(tag, NO_VALUE) or  NO_VALUE
+            res.append( s.replace("\n", ", "))
+        return res
+
+    out = open("out.csv", "w")
+
+    values_tags = (
+        TAG_NAME,
+        TAG_DESCRIPTION,
+        TAG_URL,
+        TAG_FOUNDED_YEAR,
+        TAG_FUNDING_TOTAL,
+        TAG_LAST_AMT,
+        TAG_LAST_DATE,
+        TAG_LAST_SOURCE,
+        TAG_LAST_INVESTORS,
+        TAG_PREVIOUS_AMT,
+        TAG_PREVIOUS_DATE,
+        TAG_PREVIOUS_SOURCE,
+        TAG_PREVIOUS_INVESTORS,
+        TAG_PROFILE
+    )
+
+    out.write("{}\n".format(
+            "\t".join( values_tags )
+        ))
+
+    i = 1
+    total_count = 20
+    for k in profiles.keys():
+        profile = profiles[k]
+        out.write("{}\n".format(
+            "\t".join( get_values( profile, values_tags) )
+        ))
+        # if i > total_count: break
+        # i += 1
+
+    out.close()
+    profiles.close()
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
     # collect_profiles_links()
     # collect_profiles_data()
-    print("some")
+    # print("some")
+    # export_to_csv()
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 
