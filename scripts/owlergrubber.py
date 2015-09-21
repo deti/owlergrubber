@@ -50,44 +50,45 @@ def _get_browser():
 
 
 def collect_profiles_links():
+    # browser = _get_browser()
+    # login_to_owler(browser)
+    # iterate_through_search(browser,
+    #                        funds_from=10 * ONE_M,
+    #                        funds_to=50 * ONE_M,
+    #                        funds_gap=40 * ONE_M,
+    #                        funds_step=10 * ONE_M,
+    #                        year_from=0,
+    #                        year_to=8,
+    #                        year_gap=8,
+    #                        year_step=1)
+    # browser.quit()
+
+
+    # browser = _get_browser()
+    # login_to_owler(browser)
+    # iterate_through_search(browser,
+    #                        funds_from=51 * ONE_M,
+    #                        funds_to=95*ONE_M,
+    #                        funds_gap=44*ONE_M,
+    #                        funds_step=10 * ONE_M,
+    #                        year_from=0,
+    #                        year_to=8,
+    #                        year_gap=8,
+    #                        year_step=1)
+    # browser.quit()
+
     browser = _get_browser()
     login_to_owler(browser)
     iterate_through_search(browser,
-                           funds_from=10 * ONE_M,
-                           funds_to=50 * ONE_M,
-                           funds_gap=40 * ONE_M,
-                           funds_step=10 * ONE_M,
+                           funds_from=96*ONE_M,
+                           funds_to=100*ONE_M,
+                           funds_gap=4*ONE_M,
+                           funds_step=10*ONE_M,
                            year_from=0,
                            year_to=8,
                            year_gap=8,
                            year_step=1)
     browser.quit()
-
-
-    # browser = _get_browser()
-    # login_to_owler(browser)
-    # iterate_through_search(browser,
-    # funds_from=0,
-    #                        funds_to=10*ONE_M,
-    #                        funds_gap=2*ONE_M,
-    #                        funds_step=ONE_M,
-    #                        year_from=0,
-    #                        year_to=8,
-    #                        year_gap=2,
-    #                        year_step=1)
-    # browser.quit()
-    # browser = _get_browser()
-    # login_to_owler(browser)
-    # iterate_through_search(browser,
-    #                        funds_from=10*ONE_M,
-    #                        funds_to=100*ONE_M,
-    #                        funds_gap=10*ONE_M,
-    #                        funds_step=10*ONE_M,
-    #                        year_from=0,
-    #                        year_to=8,
-    #                        year_gap=2,
-    #                        year_step=1)
-    # browser.quit()
 
 
 def collect_profiles_data():
@@ -109,7 +110,7 @@ def collect_profiles_data():
     browser.quit()
     profiles.close()
 
-def export_to_csv():
+def export_to_csv(out_csv):
     profiles = SqliteDict(conf.db.db_file, autocommit=False)
 
     def get_values(values, tags):
@@ -155,11 +156,19 @@ def export_to_csv():
     out.close()
     profiles.close()
 
+def merging_dbs():
+    pass
+
+def search_and_save_csv(key_words, out_filename):
+    pass
+
+
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    # collect_profiles_links()
-    # collect_profiles_data()
+    collect_profiles_links()
+    collect_profiles_data()
+
     # print("some")
     # export_to_csv()
     logging.info("-------- Finish {} -------".format(conf.app_name))
