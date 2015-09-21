@@ -3,6 +3,11 @@ __author__ = 'deti'
 import logging
 
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.expected_conditions import presence_of_element_located
+
+
 from constants import *
 
 test_profiles = [
@@ -42,6 +47,13 @@ def get_href_by_class_name(element, class_name):
 
 def get_profile(browser, url):
     browser.get(url)
+
+    WebDriverWait(browser,30).until(
+        presence_of_element_located(
+            (By.ID,"fundings")
+        )
+    )
+
 
     company_name = get_text_by_id(browser, "companyName")
     description = get_text_by_id(browser, "description")

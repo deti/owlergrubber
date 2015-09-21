@@ -19,6 +19,7 @@ from owler.general import login_to_owler
 from owler.search import iterate_through_search
 from owler.profile import get_profile
 
+from os import path
 
 
 def config_logging():
@@ -110,8 +111,8 @@ def collect_profiles_data():
     browser.quit()
     profiles.close()
 
-def export_to_csv(out_csv):
-    profiles = SqliteDict(conf.db.db_file, autocommit=False)
+def export_db_to_csv(in_db, out_csv):
+    profiles = SqliteDict(in_db, autocommit=False)
 
     def get_values(values, tags):
         res = list()
@@ -120,12 +121,13 @@ def export_to_csv(out_csv):
             res.append( s.replace("\n", ", "))
         return res
 
-    out = open("out.csv", "w")
+    out = open(out_csv, "w")
 
     values_tags = (
         TAG_NAME,
         TAG_DESCRIPTION,
         TAG_URL,
+        TAG_PROFILE,
         TAG_FOUNDED_YEAR,
         TAG_FUNDING_TOTAL,
         TAG_LAST_AMT,
@@ -135,8 +137,7 @@ def export_to_csv(out_csv):
         TAG_PREVIOUS_AMT,
         TAG_PREVIOUS_DATE,
         TAG_PREVIOUS_SOURCE,
-        TAG_PREVIOUS_INVESTORS,
-        TAG_PROFILE
+        TAG_PREVIOUS_INVESTORS
     )
 
     out.write("{}\n".format(
@@ -156,21 +157,51 @@ def export_to_csv(out_csv):
     out.close()
     profiles.close()
 
-def merging_dbs():
-    pass
+def merge_dbs(input_list, output_file):
+    outdb = SqliteDict(output_file, autocommit=True)
+
+    for input_name in input_list:
+        indb = SqliteDict(input_name, autocommit=False)
+        outdb.update(indb)
+        # for k in indb.keys():
+        #     pass
+        indb.close()
+
+    outdb.close()
 
 def search_and_save_csv(key_words, out_filename):
-    pass
+    tmp_db_file_name = path.join(conf.db.db_dir, out_filename+".sqlite")
+    tmpdb = SqliteDict(tmp_db_file_name, autocommit=True)
+    indb = SqliteDict(conf.db.db_file, autocommit=False)
+
+    key_words = [kw.lower() for kw in key_words]
+
+    for k in indb.keys():
+        description = indb[k][TAG_DESCRIPTION].lower()
+        for word in key_words:
+            if description.find(word) >= 0:
+                tmpdb[k] = indb[k]
+    tmpdb.close()
+    indb.close()
+
+    export_db_to_csv(tmp_db_file_name, out_filename+".csv")
+
 
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    collect_profiles_links()
-    collect_profiles_data()
+    # collect_profiles_links()
+    # collect_profiles_data()
 
     # print("some")
     # export_to_csv()
+
+    # dbs = ("10_to_50_fulldata.sqlite", "51_to_95_fulldata.sqlite", "96_to_infinity.sqlite")
+    # dbs = [path.join(conf.db.db_dir, i) for i in dbs]
+    # merge_dbs(dbs, conf.db.db_file)
+
+    search_and_save_csv(["home"], "home")
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 
