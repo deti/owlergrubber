@@ -25,3 +25,22 @@ owler:
   url: "https://www.owler.com/"
   login: __FIX_ME__
   password: __FIX_ME__
+  
+
+
+# Funds in millions
+funds:
+  start: __FIX_ME__
+  finish: __FIX_ME__
+  gap: __FIX_ME__
+  step: __FIX_ME__
+
+year:
+  start: __FIX_ME__
+  finish: __FIX_ME__
+  gap: __FIX_ME__
+  step: __FIX_ME__
+
+
+requests:
+  __FIX_ME__

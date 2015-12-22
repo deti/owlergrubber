@@ -21,7 +21,7 @@ def read(fname):
 packages = find_packages(".")
 setup(
     name="owlergrubber",
-    version="0.0.1",  # TODO read from version
+    version="0.0.1",
     author="deti",
     author_email="detijazzz@gmail.com",
     description="Owler.com grubber",
@@ -37,6 +37,8 @@ setup(
         [
             'owlergrubber = owlergrubber:main',
             'owlergrubber.py = owlergrubber:main',
+            'collect_profiles.py = owlergrubber:collect_profiles',
+            'search_for_words.py = owlergrubber:search_for_words',
         ]
     },
     classifiers=[

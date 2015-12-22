@@ -105,12 +105,12 @@ def make_advanced_search(browser, funds_from, funds_to, year_from, year_to):
 
 
 def iterate_through_search(browser,
-                           funds_from,
-                           funds_to,
+                           funds_start,
+                           funds_finish,
                            funds_gap,
                            funds_step,
-                           year_from,
-                           year_to,
+                           year_start,
+                           year_finish,
                            year_gap,
                            year_step):
     """
@@ -120,13 +120,13 @@ def iterate_through_search(browser,
     """
     advanced_search = browser.find_element_by_class_name("advncd-search")
     advanced_search.click()
-    funds_l = funds_from
-    funds_r = funds_from + funds_gap
+    funds_l = funds_start
+    funds_r = funds_start + funds_gap
 
-    while funds_r <= funds_to:
-        year_l = year_from
-        year_r = year_from+year_gap
-        while year_r <= year_to:
+    while funds_r <= funds_finish:
+        year_l = year_start
+        year_r = year_start + year_gap
+        while year_r <= year_finish:
 
             make_advanced_search(browser, funds_l, funds_r, year_l, year_r)
             dataTables_info = browser.find_element_by_class_name("dataTables_info")

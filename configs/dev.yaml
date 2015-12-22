@@ -1,0 +1,25 @@
+logging:
+  level: 20
+
+owler:
+  login: "detijazzz@yandex.ru"
+  password: "password^"
+
+funds: # Funds in millions
+  start: 96
+  finish: 100
+  gap: 4
+  step: 10
+
+
+year:
+  start: 0
+  finish: 5
+  gap: 2
+  step: 1
+
+
+requests:
+  kids:
+    - kids
+    - children

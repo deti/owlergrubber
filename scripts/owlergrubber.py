@@ -51,48 +51,28 @@ def _get_browser():
 
 
 def collect_profiles_links():
-    # browser = _get_browser()
-    # login_to_owler(browser)
-    # iterate_through_search(browser,
-    #                        funds_from=10 * ONE_M,
-    #                        funds_to=50 * ONE_M,
-    #                        funds_gap=40 * ONE_M,
-    #                        funds_step=10 * ONE_M,
-    #                        year_from=0,
-    #                        year_to=8,
-    #                        year_gap=8,
-    #                        year_step=1)
-    # browser.quit()
-
-
-    # browser = _get_browser()
-    # login_to_owler(browser)
-    # iterate_through_search(browser,
-    #                        funds_from=51 * ONE_M,
-    #                        funds_to=95*ONE_M,
-    #                        funds_gap=44*ONE_M,
-    #                        funds_step=10 * ONE_M,
-    #                        year_from=0,
-    #                        year_to=8,
-    #                        year_gap=8,
-    #                        year_step=1)
-    # browser.quit()
-
+    """
+    Collect all profile links from Owler through search.
+    Save all links to DB
+    """
     browser = _get_browser()
     login_to_owler(browser)
     iterate_through_search(browser,
-                           funds_from=96*ONE_M,
-                           funds_to=100*ONE_M,
-                           funds_gap=4*ONE_M,
-                           funds_step=10*ONE_M,
-                           year_from=0,
-                           year_to=8,
-                           year_gap=8,
-                           year_step=1)
+                           funds_start=conf.funds.start * ONE_M,
+                           funds_finish=conf.funds.finish * ONE_M,
+                           funds_gap=conf.funds.gap*ONE_M,
+                           funds_step=conf.funds.step*ONE_M,
+                           year_start=conf.year.start,
+                           year_finish=conf.year.finish,
+                           year_gap=conf.year.gap,
+                           year_step=conf.year.step)
     browser.quit()
 
 
 def collect_profiles_data():
+    """
+    Get profile data for profiles in DB
+    """
     profiles = SqliteDict(conf.db.db_file, autocommit=True)
     browser = _get_browser()
     login_to_owler(browser)
@@ -112,6 +92,11 @@ def collect_profiles_data():
     profiles.close()
 
 def export_db_to_csv(in_db, out_csv):
+    """
+    Export info from DataBase to CSV file
+    :param in_db: path to database
+    :param out_csv: path to output csv file
+    """
     profiles = SqliteDict(in_db, autocommit=False)
 
     def get_values(values, tags):
@@ -158,18 +143,25 @@ def export_db_to_csv(in_db, out_csv):
     profiles.close()
 
 def merge_dbs(input_list, output_file):
+    """
+    Merge several DBs into one output file
+    :param input_list: list of paths to DBs
+    :param output_file: path to result DB
+    """
     outdb = SqliteDict(output_file, autocommit=True)
-
     for input_name in input_list:
         indb = SqliteDict(input_name, autocommit=False)
         outdb.update(indb)
-        # for k in indb.keys():
-        #     pass
         indb.close()
-
     outdb.close()
 
 def search_and_save_csv(key_words, out_filename):
+    """
+    Search for key words in project description and save relevant rows to output csv file
+    :param key_words: list of key words
+    :param out_filename: output csv file name
+    :return:
+    """
     tmp_db_file_name = path.join(conf.db.db_dir, out_filename+".sqlite")
     tmpdb = SqliteDict(tmp_db_file_name, autocommit=True)
     indb = SqliteDict(conf.db.db_file, autocommit=False)
@@ -183,108 +175,32 @@ def search_and_save_csv(key_words, out_filename):
                 tmpdb[k] = indb[k]
     tmpdb.close()
     indb.close()
-
     export_db_to_csv(tmp_db_file_name, out_filename+".csv")
 
-def search_and_save_csv_investors(key_words, out_filename):
-    tmp_db_file_name = path.join(conf.db.db_dir, out_filename+".sqlite")
-    tmpdb = SqliteDict(tmp_db_file_name, autocommit=True)
-    indb = SqliteDict(conf.db.db_file, autocommit=False)
 
-    key_words = [kw.lower() for kw in key_words]
 
-    for k in indb.keys():
-        last = indb[k][TAG_LAST_INVESTORS]
-        if last:
-            last = last.lower()
-            for word in key_words:
-                if last.find(word) >= 0:
-                    tmpdb[k] = indb[k]
-                    continue
-        previous = indb[k][TAG_PREVIOUS_INVESTORS]
-        if previous:
-            previous = previous.lower()
-            for word in key_words:
-                if previous.find(word) >= 0:
-                    tmpdb[k] = indb[k]
-                    continue
-    tmpdb.close()
-    indb.close()
-    export_db_to_csv(tmp_db_file_name, out_filename+".csv")
+def collect_profiles():
+    config_logging()
+    logging.info("-------- Start {} collect_profiles --------".format(conf.app_name))
+    collect_profiles_links()
+    collect_profiles_data()
+    export_db_to_csv(conf.db.db_file, "out.csv")
+    logging.info("-------- Finish {} collect_profiles -------".format(conf.app_name))
 
+
+def search_for_words():
+    config_logging()
+    logging.info("-------- Start {} search_for_words --------".format(conf.app_name))
+    for r in conf.requests:
+        search_and_save_csv(conf.requests[r], r)
+    logging.info("-------- Finish {} search_for_words -------".format(conf.app_name))
 
 def main():
     config_logging()
     logging.info("-------- Start {} --------".format(conf.app_name))
-    # collect_profiles_links()
-    # collect_profiles_data()
-
-    # print("some")
-    # export_to_csv()
-
-    # dbs = ("10_to_50_fulldata.sqlite", "51_to_95_fulldata.sqlite", "96_to_infinity.sqlite")
-    # dbs = [path.join(conf.db.db_dir, i) for i in dbs]
-    # merge_dbs(dbs, conf.db.db_file)
-
-    # search_and_save_csv(["furniture", "home", "decor",
-    #                      "accessories", "kitchen", "wardrobe",
-    #                      "lighting", "cookware", "household"],
-    #                     "allforhome")
-
-    # search_and_save_csv(
-    #     ["kid", "baby", "women", "boutique",
-    #      "garment", "cloth", "coth", "footwear",
-    #      "accessories", "marketplace",
-    #      "clothing", "bag", "apparel",
-    #      "jewelry", "fashion", "e-commerce", "store"],
-    #     "apparel")
-
-    # search_and_save_csv(["jewelry"], "jewelry")
-    # search_and_save_csv(["change"], "change")
-    # search_and_save_csv(["food", "meal", "delivery", "snack", "dining",
-    #                      "drink", "beverage", "reserv", "restaurant", "book"],
-    #                     "food")
-    # search_and_save_csv_investors(["rocket"], "rocket")
-    # search_and_save_csv(["beauty", "hair", "nail", "styl"], "beauty")
-    # search_and_save_csv(["reward"], "reward")
-    # search_and_save_csv(["pos", "point of sale"], "pos")
-    # search_and_save_csv(["car", "limo", "driver", "valet", "vehicle", "van"], "car")
-    # search_and_save_csv(["career"], "career")
-    # search_and_save_csv(["diapers"], "diapers")
-    # search_and_save_csv(["baby"], "baby")
-    # search_and_save_csv(["compar"], "compare")
-    # search_and_save_csv(["kiosk"], "kiosk")
-    # search_and_save_csv([" used", "owned", "secondhand"], "secondhand")
-    # search_and_save_csv(["stream"], "stream")
-    # search_and_save_csv(["payment"], "payment")
-    # search_and_save_csv(["bitcoin"], "bitcoin")
-
-
-    # search_and_save_csv(["reward"], "reward")
-    # search_and_save_csv(["office"], "office")
-    # search_and_save_csv(["coock"], "coock")
-
-    # search_and_save_csv(["valet", "uber"], "valet")
-    # # search_and_save_csv(["uber"], "uber")
-    # search_and_save_csv(["interior"], "interior")
-    # search_and_save_csv(["local"], "local")
-    # search_and_save_csv(["stream"], "stream")
-
-    # search_and_save_csv(["invoices"], "invoices")
-
-    from os import path
-
-    export_db_to_csv(path.join(conf.db.db_dir, "10_to_50_fulldata.sqlite"),
-                     "10_to_50_fulldata.csv")
-
-    export_db_to_csv(path.join(conf.db.db_dir, "51_to_95_fulldata.sqlite"),
-                     "51_to_95_fulldata.csv")
-
-    export_db_to_csv(path.join(conf.db.db_dir, "96_to_infinity.sqlite"),
-                     "96_to_infinity.csv")
-
+    collect_profiles()
+    search_for_words()
     logging.info("-------- Finish {} -------".format(conf.app_name))
-
 
 if __name__ == "__main__":
     main()

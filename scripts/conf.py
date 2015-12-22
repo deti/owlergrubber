@@ -11,7 +11,7 @@ def read():
 
     def config_directory():
         root_path = root_directory()
-        return os.path.join(root_path, "configs", "stage")
+        return os.path.join(root_path, "configs")
 
     def fix_me():
         print("fix me")
