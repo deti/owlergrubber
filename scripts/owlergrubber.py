@@ -186,6 +186,31 @@ def search_and_save_csv(key_words, out_filename):
 
     export_db_to_csv(tmp_db_file_name, out_filename+".csv")
 
+def search_and_save_csv_investors(key_words, out_filename):
+    tmp_db_file_name = path.join(conf.db.db_dir, out_filename+".sqlite")
+    tmpdb = SqliteDict(tmp_db_file_name, autocommit=True)
+    indb = SqliteDict(conf.db.db_file, autocommit=False)
+
+    key_words = [kw.lower() for kw in key_words]
+
+    for k in indb.keys():
+        last = indb[k][TAG_LAST_INVESTORS]
+        if last:
+            last = last.lower()
+            for word in key_words:
+                if last.find(word) >= 0:
+                    tmpdb[k] = indb[k]
+                    continue
+        previous = indb[k][TAG_PREVIOUS_INVESTORS]
+        if previous:
+            previous = previous.lower()
+            for word in key_words:
+                if previous.find(word) >= 0:
+                    tmpdb[k] = indb[k]
+                    continue
+    tmpdb.close()
+    indb.close()
+    export_db_to_csv(tmp_db_file_name, out_filename+".csv")
 
 
 def main():
@@ -201,7 +226,63 @@ def main():
     # dbs = [path.join(conf.db.db_dir, i) for i in dbs]
     # merge_dbs(dbs, conf.db.db_file)
 
-    search_and_save_csv(["home"], "home")
+    # search_and_save_csv(["furniture", "home", "decor",
+    #                      "accessories", "kitchen", "wardrobe",
+    #                      "lighting", "cookware", "household"],
+    #                     "allforhome")
+
+    # search_and_save_csv(
+    #     ["kid", "baby", "women", "boutique",
+    #      "garment", "cloth", "coth", "footwear",
+    #      "accessories", "marketplace",
+    #      "clothing", "bag", "apparel",
+    #      "jewelry", "fashion", "e-commerce", "store"],
+    #     "apparel")
+
+    # search_and_save_csv(["jewelry"], "jewelry")
+    # search_and_save_csv(["change"], "change")
+    # search_and_save_csv(["food", "meal", "delivery", "snack", "dining",
+    #                      "drink", "beverage", "reserv", "restaurant", "book"],
+    #                     "food")
+    # search_and_save_csv_investors(["rocket"], "rocket")
+    # search_and_save_csv(["beauty", "hair", "nail", "styl"], "beauty")
+    # search_and_save_csv(["reward"], "reward")
+    # search_and_save_csv(["pos", "point of sale"], "pos")
+    # search_and_save_csv(["car", "limo", "driver", "valet", "vehicle", "van"], "car")
+    # search_and_save_csv(["career"], "career")
+    # search_and_save_csv(["diapers"], "diapers")
+    # search_and_save_csv(["baby"], "baby")
+    # search_and_save_csv(["compar"], "compare")
+    # search_and_save_csv(["kiosk"], "kiosk")
+    # search_and_save_csv([" used", "owned", "secondhand"], "secondhand")
+    # search_and_save_csv(["stream"], "stream")
+    # search_and_save_csv(["payment"], "payment")
+    # search_and_save_csv(["bitcoin"], "bitcoin")
+
+
+    # search_and_save_csv(["reward"], "reward")
+    # search_and_save_csv(["office"], "office")
+    # search_and_save_csv(["coock"], "coock")
+
+    # search_and_save_csv(["valet", "uber"], "valet")
+    # # search_and_save_csv(["uber"], "uber")
+    # search_and_save_csv(["interior"], "interior")
+    # search_and_save_csv(["local"], "local")
+    # search_and_save_csv(["stream"], "stream")
+
+    # search_and_save_csv(["invoices"], "invoices")
+
+    from os import path
+
+    export_db_to_csv(path.join(conf.db.db_dir, "10_to_50_fulldata.sqlite"),
+                     "10_to_50_fulldata.csv")
+
+    export_db_to_csv(path.join(conf.db.db_dir, "51_to_95_fulldata.sqlite"),
+                     "51_to_95_fulldata.csv")
+
+    export_db_to_csv(path.join(conf.db.db_dir, "96_to_infinity.sqlite"),
+                     "96_to_infinity.csv")
+
     logging.info("-------- Finish {} -------".format(conf.app_name))
 
 
